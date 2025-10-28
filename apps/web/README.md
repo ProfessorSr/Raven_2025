@@ -1,0 +1,1 @@
+Next.js web app. Env vars: API_BASE_URL, COOKIE_DOMAIN, PUBLIC_ASSET_BASE_URL.
