@@ -4,9 +4,11 @@
   "private": true,
   "description": "Raven monorepo containing the API and web app.",
   "scripts": {
-    "dev": "concurrently \"npm -C services/api run dev\" \"npm -C apps/web run dev\"",
+    "dev": "concurrently \"npm run dev --prefix services/api\" \"npm run dev --prefix apps/web\"",
     "dev:api": "npm -C services/api run dev",
     "dev:web": "npm -C apps/web run dev",
+    "start": "npm run start --prefix services/api",
+    "start:prod": "npm run start --workspace services/api -- --env-file=.env.prod",
     "build": "npm -C services/api run build && npm -C apps/web run build",
     "lint": "echo 'Lint tasks can be added per workspace'",
     "update-sitemap": "bash scripts/update-sitemap.sh",
