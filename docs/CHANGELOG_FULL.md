@@ -1,4 +1,4 @@
-# Changelog
+# Full Changelog
 ![version](https://img.shields.io/badge/version-v0.1.0-blue.svg)
 
 ## [Unreleased]
@@ -27,4 +27,21 @@
 
 ---
 
+## [0.1.0] - 2025-10-29
+### Added
+- Stable working development environment (API + Web both running)
+- Resolved workspace conflicts and verified concurrent run
+- Updated Next.js to 14.1.0 with working App Router
+- Finalized backend Express bootstrap
+- Added TypeScript path aliases
+- Implemented monorepo configuration with separate app and service
+- Initial repository setup and folder structure
+- Supabase integration (dev + prod projects)
+- Environment variable scaffolding (.env.*)
+- Documentation: API v0 contract, models, media policy, auth details, rate limits
+- Backend scaffold (NestJS-style)
+- Auth module docs and implementation checklist
 
+### Notes
+- This marks the first stable snapshot (v0.1.0).
+- API runs on port 4000; Web app runs on port 3000.
