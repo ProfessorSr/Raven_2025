@@ -1,6 +1,10 @@
-# Environment files
+# Env files anywhere in the repo
 .env*
-!.env.example
+**/.env*
+/services/api/.env*
+/apps/web/.env*
+/apps/ios/.env*
+/apps/android/.env*
 
 # Dependencies
 node_modules/
