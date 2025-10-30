@@ -1,5 +1,31 @@
 # Full Changelog
-![version](https://img.shields.io/badge/version-v0.2.0-blue.svg)
+![version](https://img.shields.io/badge/version-v0.3.0-blue.svg)
+
+## [0.3.0] - 2025-10-29
+### Added
+- Admin UI:
+  - Inline **Create/Edit Form Field** panel (no more `prompt()`/`confirm()`).
+  - Inputs: `key`, `label`, `scope`, `type`, `write_to`, `required` (checkbox), `help_text`, `options` (comma-separated for `select`).
+  - Client-side validation and **Effective key** (sanitized) preview; submit disabled until valid.
+- API:
+  - **Auto-assign `order_index`** on create: `max(order_index) + 1`.
+  - Optional debug logging (`DEBUG_ADMIN=true`) with useful request samples.
+
+### Changed
+- `services/api/src/modules/admin/formFields.controller.ts`:
+  - Derive `key` from `label` if `key` missing/blank; sanitize to snake_case.
+  - Router-level body parsers (`express.json`, `urlencoded`, **`text`**), plus **string-body JSON.parse** shim for POST/PUT.
+  - Clear 400 validation messages instead of DB constraint errors.
+- `services/api/src/modules/admin/formFields.service.ts`:
+  - Create flow now queries max `order_index` and assigns next slot.
+- `services/api/src/main.ts`:
+  - Explicit **CORS** config: `origin=http://localhost:3000`, `allowedHeaders=['Content-Type','x-admin-token']`, `methods=['GET','POST','PUT','DELETE','OPTIONS']`, `credentials=true`, and fast `OPTIONS` handler.
+- `apps/web/src/pages/login.tsx`:
+  - Better UX: show/hide password, disabled submit, clear inline errors.
+
+### Fixed
+- Browser sending `text/plain` causing empty `req.body` → **“key is required”** (now handled).
+- `order_index NOT NULL` insertion errors (now auto-assigned).
 
 ## [0.2.0] - 2025-10-29
 ### Added

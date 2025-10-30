@@ -11,13 +11,19 @@
 │   │   └── README.md
 │   ├── web
 │   │   ├── src
-│   │   │   └── app
-│   │   │       ├── login
-│   │   │       │   └── page.tsx
-│   │   │       ├── signup
-│   │   │       │   └── page.tsx
-│   │   │       ├── layout.tsx
-│   │   │       └── page.tsx
+│   │   │   ├── components
+│   │   │   │   └── DynamicForm.tsx
+│   │   │   ├── lib
+│   │   │   │   └── api.ts
+│   │   │   ├── pages
+│   │   │   │   ├── admin
+│   │   │   │   │   ├── forms.tsx
+│   │   │   │   │   └── index.tsx
+│   │   │   │   ├── login.tsx
+│   │   │   │   ├── profile.tsx
+│   │   │   │   └── signup.tsx
+│   │   │   └── .DS_Store
+│   │   ├── .DS_Store
 │   │   ├── .env.local
 │   │   ├── .env.local.example
 │   │   ├── .env.nonprod
@@ -75,6 +81,9 @@
 │   │   │   ├── db
 │   │   │   │   └── README.md
 │   │   │   ├── modules
+│   │   │   │   ├── admin
+│   │   │   │   │   ├── formFields.controller.ts
+│   │   │   │   │   └── formFields.service.ts
 │   │   │   │   ├── auth
 │   │   │   │   │   ├── docs
 │   │   │   │   │   │   ├── endpoint-checklist.md
