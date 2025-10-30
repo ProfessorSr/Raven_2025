@@ -1,5 +1,5 @@
 # Raven
-![version](https://img.shields.io/badge/version-v0.1.0-blue.svg)
+![version](https://img.shields.io/badge/version-v0.6.0-blue.svg)
 ![status](https://img.shields.io/badge/status-stable-brightgreen.svg)
 
 Raven is a **web + native iOS/Android social CMS** built for modern communities.
@@ -153,7 +153,7 @@ Press `Ctrl + C` to stop both processes.
 ---
 
 ## 🏷️ Version
-Current release: **v0.1.0**  
+Current release: **v0.6.0**  
 See [docs/CHANGELOG_FULL.md](./docs/CHANGELOG_FULL.md).
 
 ---
