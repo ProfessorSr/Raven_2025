@@ -2,11 +2,33 @@ export const API_BASE =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:4000';
 
 async function request(path: string, init: RequestInit = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const url = `${API_BASE}${path}`;
+  const method = (init.method || 'GET').toString().toUpperCase();
+
+  // Build headers safely: only set Content-Type when we actually send a JSON body
+  const headers = new Headers(init.headers || {});
+  const hasBody = init.body != null && method !== 'GET' && method !== 'HEAD';
+  if (hasBody && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
+  if (!headers.has('Accept')) headers.set('Accept', 'application/json');
+
+  // Do not send a body for GET/HEAD
+  const fetchInit: RequestInit = {
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...(init.headers || {}) },
     ...init,
-  });
+    method,
+    headers,
+  };
+  if (method === 'GET' || method === 'HEAD') {
+    delete (fetchInit as any).body;
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(url, fetchInit);
+  } catch (err: any) {
+    throw new Error(err?.message || 'Network error');
+  }
+
   const text = await res.text();
   let data: any = null;
   try { data = text ? JSON.parse(text) : null; } catch { data = { raw: text }; }
@@ -26,6 +48,9 @@ export const api = {
     signup: (body: any) => request('/v0/auth/signup', { method: 'POST', body: JSON.stringify(body) }),
     login: (body: any) => request('/v0/auth/login', { method: 'POST', body: JSON.stringify(body) }),
     me: () => request('/v0/auth/me'),
+    logout() {
+      return request('/v0/auth/logout', { method: 'POST' });
+    },
   },
   profile: {
     get: () => request('/v0/profile'),

@@ -16,18 +16,21 @@ app.use(
   cors({
     origin: ['http://localhost:3000'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'x-admin-token'],
+    allowedHeaders: ['Content-Type', 'x-admin-token', 'Accept'], // <- add Accept here
     credentials: true,
   })
 );
 
 // Handle preflight requests quickly
-app.options('*', cors({
-  origin: ['http://localhost:3000'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'x-admin-token'],
-  credentials: true,
-}));
+app.options(
+  '*',
+  cors({
+    origin: ['http://localhost:3000'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'x-admin-token', 'Accept'], // <- and here
+    credentials: true,
+  })
+);
 
 // Routers
 app.use('/v0/form', formsRouter);

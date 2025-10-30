@@ -50,10 +50,17 @@ export default function AdminForms() {
   });
   const [formError, setFormError] = React.useState<string>('');
 
+  const [rows, setRows] = React.useState<Field[]>([]);
+  const [dirtyOrder, setDirtyOrder] = React.useState(false);
+  const dragIndexRef = React.useRef<number | null>(null);
+
   const reload = async () => {
     try {
       const d = await api.admin.listFields(filter || undefined);
-      setFields((d as any).fields || (d as any) || []);
+      const arr: Field[] = ((d as any).fields || (d as any) || []) as Field[];
+      setFields(arr);
+      setRows(arr);
+      setDirtyOrder(false);
       setError('');
     } catch (e: any) {
       setError(e.message);
@@ -86,56 +93,56 @@ export default function AdminForms() {
     setShowPanel(true);
   }
 
-    function validate(): string | null {
-      const k = sanitizeKey(form.key || '');
-      // derive from label if key is empty
-      const derived = !k && form.label ? sanitizeKey(form.label) : k;
+  function validate(): string | null {
+    const k = sanitizeKey(form.key || '');
+    // derive from label if key is empty
+    const derived = !k && form.label ? sanitizeKey(form.label) : k;
 
-      if (!derived) return 'Key is required (use letters, numbers, underscore).';
-      if (!SCOPES.includes(form.scope)) return 'Invalid scope';
-      if (!TYPES.includes(form.type)) return 'Invalid type';
-      if (!WRITE_TO.includes(form.write_to)) return 'Invalid write_to';
-      if (form.type === 'select' && form.options && !Array.isArray(form.options)) {
-        return 'Options must be an array for select';
-      }
-      return null;
+    if (!derived) return 'Key is required (use letters, numbers, underscore).';
+    if (!SCOPES.includes(form.scope)) return 'Invalid scope';
+    if (!TYPES.includes(form.type)) return 'Invalid type';
+    if (!WRITE_TO.includes(form.write_to)) return 'Invalid write_to';
+    if (form.type === 'select' && form.options && !Array.isArray(form.options)) {
+      return 'Options must be an array for select';
     }
+    return null;
+  }
 
-    async function submit() {
-      const err = validate();
-      if (err) { setFormError(err); return; }
-      setLoading(true);
-      setFormError('');
-      const effectiveKey = sanitizedPreview;
-      if (!effectiveKey) {
-        setFormError('Key is required (derived from key or label).');
-        setLoading(false);
-        return;
-      }
-      try {
-        // final sanitize + derive
-        const k = effectiveKey;
-        const payload: any = {
-          ...form,
-          key: k,
-          label: form.label && form.label.trim() ? form.label : k,
-          options: form.type === 'select'
-            ? (Array.isArray(form.options) ? form.options : [])
-            : null,
-        };
-        console.debug('[admin/forms] submitting payload', payload);
-        await (editingId
-          ? api.admin.updateField(editingId, payload, token)
-          : api.admin.createField(payload, token)
-        );
-        setShowPanel(false);
-        await reload();
-      } catch (e: any) {
-        setFormError(e.message || 'Failed to save');
-      } finally {
-        setLoading(false);
-      }
+  async function submit() {
+    const err = validate();
+    if (err) { setFormError(err); return; }
+    setLoading(true);
+    setFormError('');
+    const effectiveKey = sanitizedPreview;
+    if (!effectiveKey) {
+      setFormError('Key is required (derived from key or label).');
+      setLoading(false);
+      return;
     }
+    try {
+      // final sanitize + derive
+      const k = effectiveKey;
+      const payload: any = {
+        ...form,
+        key: k,
+        label: form.label && form.label.trim() ? form.label : k,
+        options: form.type === 'select'
+          ? (Array.isArray(form.options) ? form.options : [])
+          : null,
+      };
+      console.debug('[admin/forms] submitting payload', payload);
+      await (editingId
+        ? api.admin.updateField(editingId, payload, token)
+        : api.admin.createField(payload, token)
+      );
+      setShowPanel(false);
+      await reload();
+    } catch (e: any) {
+      setFormError(e.message || 'Failed to save');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function onDelete(f: Field) {
     if (!confirm(`Delete field "${f.key}"?`)) return;
@@ -154,6 +161,62 @@ export default function AdminForms() {
   const sanitizedPreview = sanitizeKey(form.key || '') || (form.label ? sanitizeKey(form.label) : '');
   const effectiveKey = sanitizedPreview;
 
+  function onDragStart(idx: number) {
+    dragIndexRef.current = idx;
+  }
+  function onDragOver(e: React.DragEvent) {
+    e.preventDefault();
+  }
+  function onDrop(idx: number) {
+    const from = dragIndexRef.current;
+    dragIndexRef.current = null;
+    if (from == null || from === idx) return;
+    setRows((prev) => {
+      const next = prev.slice();
+      const [moved] = next.splice(from, 1);
+      next.splice(idx, 0, moved);
+      return next;
+    });
+    setDirtyOrder(true);
+  }
+
+  async function saveOrder() {
+    if (!dirtyOrder) return;
+    try {
+      // Prevent saving if any row is missing an id (would cause upsert/insert and DB NOT NULL errors)
+      const missing = rows.filter((r: any) => !r?.id);
+      if (missing.length) {
+        setError(`Cannot save order: ${missing.length} item(s) missing id. Click Reload and try again.`);
+        await reload();
+        return;
+      }
+
+      const ids = rows.map((r) => String(r.id));
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/v0/admin/form-fields/reorder`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-token': token,
+          // NOTE: omit 'Accept' to avoid strict CORS preflight failures on some setups
+        },
+        body: JSON.stringify({ ids }),
+      });
+      const text = await res.text();
+      const data = text ? JSON.parse(text) : {};
+      if (!res.ok) throw new Error(data.error || 'Failed to save order');
+      setDirtyOrder(false);
+      await reload();
+    } catch (e: any) {
+      setError(e.message || 'Failed to save order');
+    }
+  }
+  function resetOrder() {
+    setRows(fields);
+    setDirtyOrder(false);
+  }
+
   return (
     <main style={{ maxWidth: 1000, margin: '40px auto', padding: 16 }}>
       <h1>Admin: Form Fields</h1>
@@ -166,6 +229,8 @@ export default function AdminForms() {
         </select>
         <button onClick={reload}>Reload</button>
         <button onClick={openCreate}>New Field</button>
+        <button onClick={saveOrder} disabled={!dirtyOrder}>Save Order</button>
+        <button onClick={resetOrder} disabled={!dirtyOrder}>Reset</button>
       </div>
 
       {error && <p style={{ color: 'crimson' }}>{error}</p>}
@@ -239,15 +304,27 @@ export default function AdminForms() {
         </div>
       )}
 
+      {dirtyOrder && (
+        <p style={{ color: '#b45309', background: '#fffbeb', border: '1px solid #fef3c7', padding: 8, borderRadius: 6 }}>
+          You have unsaved changes to the order. Click <b>Save Order</b> to persist.
+        </p>
+      )}
+
       <table border={1} cellPadding={6} cellSpacing={0} width="100%">
         <thead>
           <tr>
-            <th>key</th><th>label</th><th>scope</th><th>type</th><th>required</th><th>write_to</th><th>actions</th>
+            <th style={{ width: 32 }}></th><th>key</th><th>label</th><th>scope</th><th>type</th><th>required</th><th>write_to</th><th>actions</th>
           </tr>
         </thead>
         <tbody>
-          {fields.map((f: any) => (
-            <tr key={f.id || f.key}>
+          {rows.map((f: any, idx: number) => (
+            <tr key={f.id || f.key}
+                draggable
+                onDragStart={() => onDragStart(idx)}
+                onDragOver={onDragOver}
+                onDrop={() => onDrop(idx)}
+            >
+              <td style={{ cursor: 'grab', width: 32 }}>☰</td>
               <td>{f.key}</td>
               <td>{f.label}</td>
               <td>{f.scope}</td>

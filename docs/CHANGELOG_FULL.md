@@ -1,5 +1,25 @@
 # Full Changelog
-![version](https://img.shields.io/badge/version-v0.3.0-blue.svg)
+![version](https://img.shields.io/badge/version-v0.6.0-blue.svg)
+
+## [0.6.0] - 2025-10-30
+### Added
+- Full **logout** support (API + client integration).
+- **Header and Footer** components integrated across pages.
+- **Drag-and-drop reordering** for form fields in Admin UI.
+
+### Changed
+- Improved **CORS configuration** for smoother API communication.
+- Strengthened `Save Order` logic to prevent DB null-key errors.
+- Enhanced Admin UI with unsaved-order warnings.
+- Signup form dynamically reflects Supabase field order.
+
+### Fixed
+- `null value in column "key"` constraint errors during reorder.
+- CORS preflight issues caused by missing header allowances.
+- Missing `api.auth.logout()` function in web client.
+
+### Notes
+- Stable milestone including logout flow, admin reordering, and synchronized dynamic signup forms.
 
 ## [0.3.0] - 2025-10-29
 ### Added

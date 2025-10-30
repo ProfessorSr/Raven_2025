@@ -1,6 +1,7 @@
 import React from 'react';
-import { api } from '../lib/api';
-import { DynamicForm } from '../components/DynamicForm';
+import { api } from '@/lib/api';
+import { DynamicForm } from '@/components/DynamicForm';
+import Header from '@/components/Header';
 
 export default function ProfilePage() {
   const [fields, setFields] = React.useState<any[]>([]);
@@ -38,14 +39,17 @@ export default function ProfilePage() {
   };
 
   return (
-    <main style={{ maxWidth: 640, margin: '40px auto', padding: 16 }}>
-      <h1>My Profile</h1>
-      <form onSubmit={onSubmit} style={{ display: 'grid', gap: 16 }}>
-        <DynamicForm fields={fields} values={values} onChange={onChange} />
-        <button type="submit">Save</button>
-      </form>
-      {status && <p style={{ color: 'green' }}>{status}</p>}
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
-    </main>
+    <>
+      <Header />
+      <main style={{ maxWidth: 640, margin: '40px auto', padding: 16 }}>
+        <h1>My Profile</h1>
+        <form onSubmit={onSubmit} style={{ display: 'grid', gap: 16 }}>
+          <DynamicForm fields={fields} values={values} onChange={onChange} />
+          <button type="submit">Save</button>
+        </form>
+        {status && <p style={{ color: 'green' }}>{status}</p>}
+        {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      </main>
+    </>
   );
 }

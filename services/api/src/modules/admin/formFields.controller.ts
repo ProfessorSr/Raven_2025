@@ -1,13 +1,6 @@
 import express from 'express';
 import * as Svc from './formFields.service';
 
-const dbg = (...args: any[]) => {
-  if (process.env.DEBUG_ADMIN?.toLowerCase() === 'true') {
-    // eslint-disable-next-line no-console
-    console.log('[admin/form-fields]', ...args);
-  }
-};
-
 export const router = express.Router();
 // Ensure body is parsed for this router regardless of app-level middleware order
 router.use(express.json({ limit: '1mb' }));
@@ -43,7 +36,6 @@ function validateForCreate(body: any) {
   const rawKey = body && body.key != null ? String(body.key) : '';
   const rawLabel = body && body.label != null ? String(body.label) : '';
   const k = sanitizeKey(rawKey || rawLabel);
-  dbg('validateForCreate', { rawKey, rawLabel, derivedKey: k });
   if (!k) errors.push('key is required');
   out.key = k;
 
@@ -163,23 +155,11 @@ router.get('/form-fields', async (req, res) => {
 
 router.post('/form-fields', requireAdmin, async (req, res) => {
   try {
-    dbg('POST /form-fields', {
-      contentType: req.headers['content-type'],
-      keys: Object.keys(req.body || {}),
-      sample: (() => {
-        const b: any = req.body || {};
-        // return a tiny sample of values for quick inspection
-        return { key: b?.key, label: b?.label, scope: b?.scope, type: b?.type, write_to: b?.write_to, required: b?.required };
-      })(),
-    });
     // Fallback: if body arrived as text/plain, try to parse as JSON
     if (typeof req.body === 'string') {
       try {
         req.body = JSON.parse(req.body);
-        dbg('POST /form-fields parsed text body into JSON');
-      } catch (e) {
-        dbg('POST /form-fields failed to parse text body');
-      }
+      } catch {}
     }
     const payload = validateForCreate(req.body);
     const field = await Svc.create(payload);
@@ -190,16 +170,32 @@ router.post('/form-fields', requireAdmin, async (req, res) => {
   }
 });
 
+
+// Drag-and-drop reorder route
+router.post('/form-fields/reorder', requireAdmin, async (req, res) => {
+  try {
+    // Fallback: parse text/plain bodies
+    if (typeof req.body === 'string') {
+      try { req.body = JSON.parse(req.body); } catch {}
+    }
+    const ids = Array.isArray(req.body?.ids) ? req.body.ids.map((x: any) => String(x)) : null;
+    if (!ids || ids.length === 0) {
+      return res.status(400).json({ error: 'ids (string[]) is required' });
+    }
+    await Svc.reorder(ids);
+    return res.json({ ok: true });
+  } catch (e: any) {
+    const status = e.status || 400;
+    return res.status(status).json({ error: e.message || 'Reorder failed' });
+  }
+});
+
 router.put('/form-fields/:id', requireAdmin, async (req, res) => {
   try {
-    dbg('PUT /form-fields/:id body keys=', Object.keys(req.body || {}));
     if (typeof req.body === 'string') {
       try {
         req.body = JSON.parse(req.body);
-        dbg('PUT /form-fields parsed text body into JSON');
-      } catch (e) {
-        dbg('PUT /form-fields failed to parse text body');
-      }
+      } catch {}
     }
     const payload = validateForUpdate(req.body);
     const field = await Svc.update(req.params.id, payload);

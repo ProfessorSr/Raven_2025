@@ -1,3 +1,4 @@
+import React from 'react';
 import Link from 'next/link';
 
 export default function AdminHome() {
@@ -5,7 +6,7 @@ export default function AdminHome() {
     <main style={{ maxWidth: 720, margin: '40px auto', padding: 16 }}>
       <h1>Admin</h1>
       <ul>
-        <li><Link href="/admin/forms">Form Fields</Link></li>
+        <li><Link href="/admin/forms">Form fields</Link></li>
       </ul>
     </main>
   );
