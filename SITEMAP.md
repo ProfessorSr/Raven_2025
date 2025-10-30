@@ -91,7 +91,8 @@
 │   │   │   │   │   └── service.stub.ts
 │   │   │   │   ├── forms
 │   │   │   │   │   ├── controller.ts
-│   │   │   │   │   └── service.ts
+│   │   │   │   │   ├── service.ts
+│   │   │   │   │   └── validation.ts
 │   │   │   │   ├── media
 │   │   │   │   │   ├── controller.stub.ts
 │   │   │   │   │   ├── README.md
@@ -102,6 +103,7 @@
 │   │   │   │   │   └── service.stub.ts
 │   │   │   │   ├── profiles
 │   │   │   │   │   ├── controller.stub.ts
+│   │   │   │   │   ├── controller.ts
 │   │   │   │   │   ├── README.md
 │   │   │   │   │   ├── service.stub.ts
 │   │   │   │   │   └── service.ts
@@ -129,9 +131,9 @@
 ├── .DS_Store
 ├── .gitignore
 ├── CHANGELOG.md
+├── cookies.txt
 ├── package-lock.json
 ├── package.json
-├── README_profiles_module.md
 ├── README.md
 └── SITEMAP.md
 ├── node_modules/ (... many files omitted)

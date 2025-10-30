@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { router as authRouter } from './modules/auth/controller.stub';
 import { router as formsRouter } from './modules/forms/controller';
+import { router as profilesRouter } from './modules/profiles/controller';
 
 const app = express();
 
@@ -11,7 +12,13 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: process.env.CORS_ORIGINS?.split(',') || '*',
+    origin: (origin, callback) => {
+      const allowed = process.env.CORS_ORIGINS
+        ? process.env.CORS_ORIGINS.split(',').map(o => o.trim())
+        : ['http://localhost:3000'];
+      if (!origin || allowed.includes(origin)) return callback(null, true);
+      return callback(new Error('CORS not allowed for this origin'));
+    },
     credentials: true,
   })
 );
@@ -19,6 +26,7 @@ app.use(
 // Routers
 app.use('/v0/form', formsRouter);
 app.use('/v0/auth', authRouter);
+app.use('/v0/profile', profilesRouter);
 
 // Healthcheck
 app.get('/v0/health', (_, res) => res.json({ status: 'ok' }));
