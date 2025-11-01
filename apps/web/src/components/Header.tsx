@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { api } from '../lib/api';
+import { api } from '@/lib/api';
 
 export default function Header() {
   const [me, setMe] = React.useState<any>(null);
@@ -36,7 +36,7 @@ export default function Header() {
         <Link href="/signup">Sign up</Link>
         <Link href="/login">Log in</Link>
         <Link href="/profile">Profile</Link>
-        <Link href="/admin/forms">Admin</Link>
+        <Link href="/admin">Admin</Link>
       </nav>
 
       <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>

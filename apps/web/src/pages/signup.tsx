@@ -21,7 +21,7 @@ export default function SignupPage() {
       const raw: any[] = (d && (d as any).fields) || [];
       // filter to visible + registration/both, then sort by order_index
       const usable = raw
-        .filter((f) => (f?.visible !== false) && (f?.scope === 'registration' || f?.scope === 'both'))
+        .filter((f) => f?.visible !== false)
         .sort((a, b) => (a?.order_index ?? 0) - (b?.order_index ?? 0))
         .map((f) => ({
           key: f.key,
@@ -56,7 +56,11 @@ export default function SignupPage() {
     try {
       const body = { ...values };
       if (!body.email || !body.password) throw new Error('email and password are required');
-      await api.auth.signup(body);
+      const resp = await api.auth.signup(body);
+      if (resp && resp.pendingVerification) {
+        setStatus('We\'ve sent a verification link to your email. Please verify to continue.');
+        return;
+      }
       setStatus('Success! Redirecting to profile...');
       window.location.href = '/profile';
     } catch (err: any) {

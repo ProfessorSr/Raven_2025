@@ -24,7 +24,7 @@ export async function signup(data: unknown) {
   const { data: created, error } = await admin.auth.admin.createUser({
     email: body.email,
     password: body.password,
-    email_confirm: true,
+    email_confirm: false,
   });
   if (error) throw new Error(error.message);
   if (!created.user) throw new Error('User creation failed');

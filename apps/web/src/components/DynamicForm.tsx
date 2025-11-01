@@ -3,9 +3,9 @@ import React from 'react';
 export interface DynamicField {
   key: string;
   label: string;
-  type: string;
+  type: string; // 'text' | 'password' | 'email' | 'number' | 'date' | 'textarea' | 'checkbox' | 'select' | ...
   required?: boolean;
-  options?: string[] | null;
+  options?: string[] | null; // for select
   help_text?: string | null;
 }
 
@@ -20,12 +20,31 @@ export function DynamicForm({ fields, values, onChange }: Props) {
     return <p style={{ opacity: 0.7 }}>No dynamic fields to display.</p>;
   }
 
+  const allowedInputTypes = new Set([
+    'text',
+    'password',
+    'email',
+    'number',
+    'date',
+    'datetime-local',
+    'time',
+    'url',
+    'tel',
+    'search',
+  ]);
+
   return (
     <div style={{ display: 'grid', gap: 12, marginTop: 20 }}>
       {fields.map((f) => {
         const val = values?.[f.key] ?? '';
         const id = `dyn-${f.key}`;
-        const type = f.type || 'text';
+        const t = f.type || 'text';
+
+        // Determine which control to render
+        const isSelect = t === 'select' && Array.isArray(f.options);
+        const isTextarea = t === 'textarea';
+        const isCheckbox = t === 'checkbox';
+        const inputType = allowedInputTypes.has(t) ? t : 'text';
 
         return (
           <div
@@ -43,7 +62,7 @@ export function DynamicForm({ fields, values, onChange }: Props) {
               {f.required ? ' *' : ''}
             </label>
 
-            {type === 'select' && Array.isArray(f.options) ? (
+            {isSelect ? (
               <select
                 id={id}
                 value={val}
@@ -51,20 +70,20 @@ export function DynamicForm({ fields, values, onChange }: Props) {
                 onChange={(e) => onChange(f.key, e.target.value)}
               >
                 <option value="">-- Select --</option>
-                {f.options.map((opt) => (
+                {f.options!.map((opt) => (
                   <option key={opt} value={opt}>
                     {opt}
                   </option>
                 ))}
               </select>
-            ) : type === 'textarea' ? (
+            ) : isTextarea ? (
               <textarea
                 id={id}
                 value={val}
                 required={!!f.required}
                 onChange={(e) => onChange(f.key, e.target.value)}
               />
-            ) : type === 'checkbox' ? (
+            ) : isCheckbox ? (
               <input
                 id={id}
                 type="checkbox"
@@ -74,7 +93,7 @@ export function DynamicForm({ fields, values, onChange }: Props) {
             ) : (
               <input
                 id={id}
-                type={type === 'date' ? 'date' : 'text'}
+                type={inputType}
                 value={val}
                 required={!!f.required}
                 onChange={(e) => onChange(f.key, e.target.value)}
@@ -90,3 +109,5 @@ export function DynamicForm({ fields, values, onChange }: Props) {
     </div>
   );
 }
+
+export default DynamicForm;

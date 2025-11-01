@@ -1,0 +1,10 @@
+import { Router } from 'express';
+import { requireAdminOrEditor } from '../../middleware/requireRole';
+import * as Svc from './pages.service';
+const router = Router();
+router.get('/pages/:slug', async (req, res) => { try { const page = await Svc.getBySlug(String(req.params.slug)); return res.json(page); } catch (e: any) { return res.status(404).json({ error: e?.message || 'Not found' }); } });
+router.get('/admin/pages', requireAdminOrEditor, async (_req, res) => { try { const list = await Svc.listPages(); return res.json({ pages: list }); } catch (e: any) { return res.status(400).json({ error: e?.message || 'Failed to list pages' }); } });
+router.post('/admin/pages', requireAdminOrEditor, async (req, res) => { try { const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {}); const created = await Svc.create({ slug: body.slug, title: body.title, content: body.content ?? {}, is_published: !!body.is_published }); return res.json(created); } catch (e: any) { return res.status(400).json({ error: e?.message || 'Create failed' }); } });
+router.put('/admin/pages/:id', requireAdminOrEditor, async (req, res) => { try { const id = String(req.params.id); const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {}); const updated = await Svc.update(id, body); return res.json(updated); } catch (e: any) { return res.status(400).json({ error: e?.message || 'Update failed' }); } });
+router.delete('/admin/pages/:id', requireAdminOrEditor, async (req, res) => { try { const id = String(req.params.id); await Svc.remove(id); return res.json({ ok: true }); } catch (e: any) { return res.status(400).json({ error: e?.message || 'Delete failed' }); } });
+export default router;
